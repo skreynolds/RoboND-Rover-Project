@@ -46,11 +46,16 @@ class RoverState():
         self.pitch = None # Current pitch angle
         self.roll = None # Current roll angle
         self.vel = None # Current velocity
+        self.vel_count = 0 # Start the velocity count at zero
+        self.stuck_count = None # Start the stuck count at zero
         self.steer = 0 # Current steering angle
         self.throttle = 0 # Current throttle value
         self.brake = 0 # Current brake value
         self.nav_angles = None # Angles of navigable terrain pixels
         self.nav_dists = None # Distances of navigable terrain pixels
+        self.rock_angles = None # Angles of navigable rock pixels
+        self.rock_dists = None # Distances of navigable rock pixels
+        self.rock_spot_count = None
         self.ground_truth = ground_truth_3d # Ground truth worldmap
         self.mode = 'forward' # Current mode (can be forward or stop)
         self.throttle_set = 0.2 # Throttle setting when accelerating
@@ -173,6 +178,7 @@ def send_control(commands, image_string1, image_string2):
         data,
         skip_sid=True)
     eventlet.sleep(0)
+
 # Define a function to send the "pickup" command 
 def send_pickup():
     print("Picking up")

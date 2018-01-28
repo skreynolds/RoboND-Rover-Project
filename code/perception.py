@@ -104,8 +104,8 @@ def perception_step(Rover):
     
     # Threshold image for gold rocks
     hsv_warped = cv2.cvtColor(warped, cv2.COLOR_RGB2HSV)
-    lower_thres = np.array([0,100,110])
-    upper_thres = np.array([70,255,255])
+    lower_thres = np.array([0,120,120])
+    upper_thres = np.array([40,255,255])
     rock = cv2.inRange(hsv_warped, lower_thres, upper_thres).astype(bool).astype(int)
     
     # Threshold image for obstacles
@@ -179,8 +179,26 @@ def perception_step(Rover):
     # Update Rover pixel distances and angles
         # Rover.nav_dists = rover_centric_pixel_distances
         # Rover.nav_angles = rover_centric_angles
+    
+    # If the rover detects a rock, and it is not in stuck mode, the Rover will
+    # switch to the rocking mode (i.e. the mode used to search for rocks)
+    if (sum(sum(rock)) > 20) and Rover.mode != "stuck":
+        Rover.mode = "rocking"
+        Rover.rock_spot_count = 0 # The rover will reset the rock spot counter
+        distances, angles = to_polar_coords(xpix_rock, ypix_rock)
+        Rover.rock_dists = distances
+        Rover.rock_angles = angles
+    # If the Rover loses track of the rock, the Rover still remains in the rocking
+    # mode, however, will start to count down to switching back to forward mode
+    # provided the Rover cannot relocate the rock
+    elif Rover.mode == "rocking":
+        Rover.rock_spot_count += 1
+        Rover.rock_angles = 0
+    
+    # The code will always take the updated navigation distances and angles
+    # irrespective of whether or not a rock is detected
     distances, angles = to_polar_coords(xpix_nav, ypix_nav)
-    Rover.nav = distances
+    Rover.nav_dists = distances
     Rover.nav_angles = angles
     
     return Rover
